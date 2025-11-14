@@ -1,0 +1,135 @@
+.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fff5f2 0%, #ffe8e0 50%, #ffd4c8 100%);
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.header .btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.logo {
+  font-size: 48px;
+  font-weight: 700;
+  color: #ff5722;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo i {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.subheader {
+  font-size: 20px;
+  color: #333;
+  opacity: 0.85;
+  font-weight: 300;
+}
+
+.card {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  margin-bottom: 30px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%);
+  color: white;
+  padding: 18px 24px;
+  font-weight: 600;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-body {
+  padding: 24px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.animated {
+  animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 15px;
+  }
+
+  .header .btn {
+    position: static;
+    margin: 15px auto 0;
+    display: block;
+    width: auto;
+  }
+
+  .logo {
+    font-size: 36px;
+  }
+
+  .subheader {
+    font-size: 16px;
+  }
+
+  .action-buttons {
+    justify-content: center;
+  }
+
+  .btn {
+    flex: 1 1 auto;
+    min-width: 120px;
+  }
+}

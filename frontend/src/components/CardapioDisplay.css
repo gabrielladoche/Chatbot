@@ -1,0 +1,36 @@
+.cardapio-container {
+  max-height: 350px;
+  overflow-y: auto;
+  background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%);
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #ff5722;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.cardapio-container pre {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre;
+  color: #333;
+}
+
+.cardapio-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cardapio-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.cardapio-container::-webkit-scrollbar-thumb {
+  background: #ff8a65;
+  border-radius: 10px;
+}
+
+.cardapio-container::-webkit-scrollbar-thumb:hover {
+  background: #ff5722;
+}
