@@ -223,22 +223,6 @@ npm run preview
 npm run lint
 ```
 
-## 🐛 Melhorias Futuras
-
-- [ ] Adicionar banco de dados (PostgreSQL/MongoDB)
-- [ ] Sistema de autenticação
-- [ ] Painel administrativo
-- [ ] Integração com pagamento (Stripe/Mercado Pago)
-- [ ] Notificações em tempo real (WebSocket)
-- [ ] Sistema de rastreamento de pedidos
-- [ ] Histórico de pedidos do cliente
-- [ ] Cupons de desconto
-- [ ] Avaliações e feedback
-
-## 📝 Licença
-
-Este projeto é livre para uso educacional e pessoal.
-
 ## 👨‍💻 Autor
 
-Desenvolvido com ❤️ para demonstração de chatbot com React + Flask
+Gabriel Ladoche
