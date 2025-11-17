@@ -151,8 +151,6 @@ GET /pedidos/cliente/{nome}   # Pedidos por cliente
 }
 ```
 
-📖 **Documentação completa:** [DATABASE_GUIDE.md](DATABASE_GUIDE.md)
-
 ---
 
 ## 🎨 Personalização
@@ -169,7 +167,7 @@ export const pizzas = [
 ]
 ```
 
-📖 **Guia completo:** [CUSTOMIZAR_FOTOS.md](CUSTOMIZAR_FOTOS.md)
+
 
 ---
 
