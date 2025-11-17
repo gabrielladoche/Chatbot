@@ -14,7 +14,7 @@ from difflib import get_close_matches  # Para fuzzy matching
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/*": {"origins": ["http://localhost:5173", "http://localhost:5174"]}})
 
 # Inicializar banco de dados
 database.init_database()
@@ -220,6 +220,14 @@ class PizzariaAssistente:
         valor_total = 0
         itens_encontrados = []
 
+        # Converter números por extenso para dígitos
+        numeros_extenso = {
+            'uma': '1', 'um': '1', 'dois': '2', 'duas': '2', 'tres': '3', 'quatro': '4',
+            'cinco': '5', 'seis': '6', 'sete': '7', 'oito': '8', 'nove': '9', 'dez': '10'
+        }
+        for extenso, digito in numeros_extenso.items():
+            texto_pedido = re.sub(r'\b' + extenso + r'\b', digito, texto_pedido)
+
         # Sinônimos e termos alternativos para melhorar a detecção
         sinonimos = {
             "coca": "refrigerante 2l", "coca-cola": "refrigerante 2l", "coca cola": "refrigerante 2l",
@@ -230,68 +238,102 @@ class PizzariaAssistente:
             "4 queijos": "quatro queijos", "pizza 4 queijos": "quatro queijos",
             "frango c/ catupiry": "frango com catupiry", "frango catupiry": "frango com catupiry",
             "pizza de pepperoni": "pepperoni", "peperoni": "pepperoni", "peperrone": "pepperoni",
-            "suco": "suco", "suco de fruta": "suco", "natural": "suco",
-            "pizza doce": "chocolate", "sobremesa": "chocolate",
-            "agua": "água", "aguinha": "água",
-            "banana": "banana", "pizza de banana": "banana",
-            "doce de leite": "doce de leite", "docinho": "doce de leite"
+            "suco": "suco natural", "suco de fruta": "suco natural", "natural": "suco natural",
+            "pizza doce": "chocolate com morango", "sobremesa": "chocolate com morango",
+            "agua": "agua mineral", "aguinha": "agua mineral",
+            "banana": "banana com canela", "pizza de banana": "banana com canela",
+            "doce de leite": "doce de leite com coco", "docinho": "doce de leite com coco"
         }
-        
+
+        # Remove palavras auxiliares que atrapalham a detecção, mas mantém espaços
+        texto_limpo = re.sub(r'\b(pizza[s]?)\b', '', texto_pedido)
+
         # Procura por padrões de quantidade + item
-        padrao_quantidade = r'(\d+)\s*(?:x|unid\w*|unidades?|pcs)?\s+([\w\s]+?)(?:\.|\,|\;|$|\s+e\s+|\s+com\s+)'
-        matches = re.finditer(padrao_quantidade, texto_pedido + ' ')
-        
+        # Padrões: "2 calabresa", "2x margherita", "1 de quatro queijos", "2 portuguesa"
+        # Melhorado para capturar itens com múltiplas palavras
+        padrao_quantidade = r'(\d+)\s*(?:x|unid\w*|unidades?)?\s*(?:de\s+)?([a-z][a-z\s]+?)(?=\s+e\s+|\s*,|\s*;|\s*\.|$)'
+        matches = list(re.finditer(padrao_quantidade, texto_limpo))
+
+        # Debug: print para ver o que está sendo capturado
+        print(f"[DEBUG] Texto original: {texto_pedido}")
+        print(f"[DEBUG] Texto limpo: {texto_limpo}")
+        print(f"[DEBUG] Matches encontrados: {len(matches)}")
+
         for match in matches:
             qtd = int(match.group(1))
             item_text = match.group(2).strip()
-            
+
+            print(f"[DEBUG] Tentando processar: {qtd}x '{item_text}'")
+
             # Verifica se o item ou algum sinônimo está no dicionário
             item_encontrado = None
+
+            # Primeiro tenta encontrar correspondência exata
             for item_key in self.precos.keys():
-                if item_key in item_text:
+                # Tenta match exato primeiro
+                if item_key == item_text:
                     item_encontrado = item_key
+                    print(f"[DEBUG] Item encontrado (match exato): {item_key}")
                     break
-            
+
+            # Se não achou match exato, tenta substring
+            if not item_encontrado:
+                for item_key in self.precos.keys():
+                    if item_key in item_text or item_text in item_key:
+                        item_encontrado = item_key
+                        print(f"[DEBUG] Item encontrado (substring): {item_key}")
+                        break
+
             # Se não encontrou diretamente, tenta pelos sinônimos
             if not item_encontrado:
                 for sinonimo, item_real in sinonimos.items():
-                    if sinonimo in item_text:
+                    if sinonimo in item_text and item_real in self.precos:
                         item_encontrado = item_real
+                        print(f"[DEBUG] Item encontrado via sinônimo '{sinonimo}': {item_real}")
                         break
-            
+
             if item_encontrado:
                 preco = self.precos[item_encontrado]
                 valor_total += preco * qtd
                 itens_encontrados.append(f"{qtd}x {item_encontrado.title()} (R$ {preco:.2f} cada)")
-        
+                print(f"[DEBUG] Adicionado: {qtd}x {item_encontrado} = R$ {preco * qtd:.2f}")
+
         # Caso o padrão de quantidade não tenha sido encontrado, procura apenas pelos itens
         if not itens_encontrados:
+            print("[DEBUG] Nenhum match com quantidade, tentando busca simples...")
+            itens_ja_adicionados = set()
+
             for item, preco in self.precos.items():
-                if item in texto_pedido:
+                if item in texto_pedido and item not in itens_ja_adicionados:
                     valor_total += preco
                     itens_encontrados.append(f"1x {item.title()} (R$ {preco:.2f})")
-            
+                    itens_ja_adicionados.add(item)
+
             # Tenta identificar pelos sinônimos
             if not itens_encontrados:
                 for sinonimo, item_real in sinonimos.items():
-                    if sinonimo in texto_pedido and item_real in self.precos:
+                    if sinonimo in texto_pedido and item_real in self.precos and item_real not in itens_ja_adicionados:
                         preco = self.precos[item_real]
                         valor_total += preco
                         itens_encontrados.append(f"1x {item_real.title()} (R$ {preco:.2f})")
-        
+                        itens_ja_adicionados.add(item_real)
+
         # Se ainda não identificou nada, procura por palavras-chave gerais
         if not itens_encontrados:
             if "pizza" in texto_pedido:
                 # Assume uma pizza tradicional se mencionou pizza
                 valor_total += 45.90
                 itens_encontrados.append("1x Pizza Tradicional (R$ 45.90)")
-            
+
             if "refri" in texto_pedido:
                 valor_total += 12.90
                 itens_encontrados.append("1x Refrigerante 2L (R$ 12.90)")
-        
+
         taxa_entrega = 0
-        
+
+        print(f"[DEBUG] Total de itens encontrados: {len(itens_encontrados)}")
+        print(f"[DEBUG] Valor total: R$ {valor_total:.2f}")
+
         return valor_total, taxa_entrega, itens_encontrados
 
     def processar_mensagem(self, mensagem_cliente):
